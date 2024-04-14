@@ -4,8 +4,15 @@ class User:
         self.last_name = last_name,
         self.phone_number = phone_number,
         self.address = address
+    def __repr__(self):
+        return f"User({self.first_name} ,{self.last_name})"
+
     def __str__(self):
-        return f"{self.first_name}\n{self.last_name}\n{self.phone_number}\n{self.address}"
+        #return f"{self.first_name}\n{self.last_name}\n{self.phone_number}\n{self.address}"
+        return f"{self.full_name}\n{self.phone_number}\n{self.address}"
+    @property
+    def full_name(self):  # update will be made after initialisation
+        return f"{self.first_name} {self.last_name}"
 
 
 if __name__ == "__main__":
@@ -18,5 +25,5 @@ if __name__ == "__main__":
             last_name=fake.last_name(),
             phone_number=fake.phone_number(),
             address=fake.address())
-        print(user)
-
+        print(repr(user))
+        print("-" * 10)
