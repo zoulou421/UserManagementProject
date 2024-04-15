@@ -1,4 +1,5 @@
 import re  # imported for _check_phone_number//re means: regex
+import string
 
 
 class User:
@@ -19,29 +20,42 @@ class User:
     def full_name(self):  # update will be made after initialisation
         return f"{self.first_name} {self.last_name}"
 
+    def _checks(self):
+        self._check_phone_number()
+        self._check_names()
+
     def _check_phone_number(self):
-        # self.phone_number.replace("+"," ").replace("(", "") // You manage manually, but using regex is better
-        # pattern: str = r'[+()\s]*'
-        pattern = r"[+()\s]*"
-        replacement = ""
-        # phone_digits = re.sub(pattern, replacement, self.phone_number)
-        phone_digits = re.sub(pattern,replacement,self.phone_number)
-        if(len(phone_digits)<10 or not phone_digits.isdigit()):
-            raise ValueError(f"Invalid phone_number {self.phone_number}")
-        #print(phone_digits)
+        phone_number = re.sub(r"[+()\s]*", "", self.phone_number)
+        if len(phone_number) < 10 or not phone_number.isdigit():
+            raise ValueError(f"Invalid phone_number {self.phone_number}.")
+
+    def _check_names(self):
+        if not (self.first_name and self.last_name):
+            raise ValueError("First and last name cannot be empty.")
+        special_characters = string.punctuation + string.digits
+
+        for character in self.first_name + self.last_name:
+            if character in special_characters:
+                raise ValueError(f"Invalid name {self.full_name}.")
 
 
 if __name__ == "__main__":
+    print(string.punctuation)
+    print(string.digits)
     from faker import Faker
 
     fake = Faker(locale="fr-FR")
     for _ in range(25):
         user = User(
-            first_name=fake.first_name(),
+            first_name="",
             last_name=fake.last_name(),
             phone_number=fake.phone_number(),
             address=fake.address())
-        print((user))
-        # user.check_phone_number()
-
-        # print("-" * 10)
+        # user._check_phone_number()
+        #print(repr(user))
+        # user._check_phone_number()
+        # user._check_phone_number()
+        #user._check_names()
+        #user._checks()
+        print(user)
+        print("-" * 10)
