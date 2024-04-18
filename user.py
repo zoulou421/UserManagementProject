@@ -1,8 +1,12 @@
 import re  # imported for _check_phone_number//re means: regex
 import string
+from tinydb import TinyDB
+from pathlib import Path
 
 
 class User:
+    DB = TinyDB(Path(__file__).resolve().parent / 'db.json', indent=4)
+
     def __init__(self, first_name: str, last_name: str, phone_number: str = "", address: str = ""):
         self.first_name = first_name,
         self.last_name = last_name,
@@ -14,7 +18,7 @@ class User:
 
     def __str__(self):
         # return f"{self.first_name}\n{self.last_name}\n{self.phone_number}\n{self.address}"
-        return f"{self.full_name}\n{self.phone_number}\n{self.address}"
+        return f"{self.full_name}\n{self.f_replace()}\n{self.address}"
 
     @property
     def full_name(self):  # update will be made after initialisation
@@ -29,6 +33,17 @@ class User:
         if len(phone_number) < 10 or not phone_number.isdigit():
             raise ValueError(f"Invalid phone_number {self.phone_number}.")
 
+    def f_replace(self):  # created in purpose to replace _check_phone_number()
+
+        phone_digits = (self.phone_number.__repr__()
+                        .replace("+", "")
+                        .replace("-", "")
+                        .replace("(", "")
+                        .replace(")", "")
+                        .replace(" ", "")
+                        .replace("''", ""))
+        return phone_digits
+
     def _check_names(self):
         if not (self.first_name and self.last_name):
             raise ValueError("First and last name cannot be empty.")
@@ -38,6 +53,19 @@ class User:
             if character in special_characters:
                 raise ValueError(f"Invalid name {self.full_name}.")
 
+    def saveData(self, validate_data: bool = False) -> int:
+        # if validate_data:
+        # self._checks()
+        # User.DB.insert({"first_name":self.first_name}) first option example
+        # User.DB.insert(self.__dict__)
+        if validate_data:
+            return User.DB.insert(self.__dict__)
+
+    '''def save(self):
+        return User.DB.insert(
+            {"first_name": self.first_name, "last_name": self.last_name, "phone_number": self.phone_number,
+             "address": self.address})'''
+
 
 if __name__ == "__main__":
     print(string.punctuation)
@@ -45,17 +73,11 @@ if __name__ == "__main__":
     from faker import Faker
 
     fake = Faker(locale="fr-FR")
-    for _ in range(25):
+    for _ in range(5):
         user = User(
-            first_name="",
+            first_name=fake.first_name,
             last_name=fake.last_name(),
             phone_number=fake.phone_number(),
             address=fake.address())
-        # user._check_phone_number()
-        #print(repr(user))
-        # user._check_phone_number()
-        # user._check_phone_number()
-        #user._check_names()
-        #user._checks()
-        print(user)
-        print("-" * 10)
+        print(user.__str__())
+        print("-" * 5)
