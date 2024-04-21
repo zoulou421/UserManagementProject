@@ -2,12 +2,13 @@ import re  # imported for _check_phone_number//re means: regex
 import string
 from tinydb import TinyDB
 from pathlib import Path
+from typing import Any, List
 
 
 class User:
     DB = TinyDB(Path(__file__).resolve().parent / 'db.json', indent=4)
 
-    def __init__(self, first_name: str, last_name: str, phone_number: str = "", address: str = ""):
+    def __init__(self, first_name: str, last_name: str, phone_number: int, address: str = ""):
         self.first_name = first_name,
         self.last_name = last_name,
         self.phone_number = phone_number,
@@ -28,8 +29,9 @@ class User:
         self._check_phone_number()
         self._check_names()
 
-    def _check_phone_number(self):
-        phone_number = re.sub(r"[+()\s]*", "", self.phone_number)
+    def __check_phone_number(self):
+        # patterns = r"!$%&'()*+,-./:;<=>?@[\]^_`{|}~" #r"[+()\s]*"
+        phone_number = re.sub(r"[+()\s]*", "", self.phone_number, flags=re.IGNORECASE)
         if len(phone_number) < 10 or not phone_number.isdigit():
             raise ValueError(f"Invalid phone_number {self.phone_number}.")
 
@@ -44,14 +46,19 @@ class User:
                         .replace("''", ""))
         return phone_digits
 
-    def _check_names(self):
+        # Declaring private method
+
+    def __fun(self):
+        print("Private method")
+
+    def __check_names(self):
         if not (self.first_name and self.last_name):
             raise ValueError("First and last name cannot be empty.")
-        special_characters = string.punctuation + string.digits
+            # special_characters = string.punctuation + string.digits
 
-        for character in self.first_name + self.last_name:
-            if character in special_characters:
-                raise ValueError(f"Invalid name {self.full_name}.")
+            # for character in self.first_name + self.last_name:
+            #    if character in special_characters:
+            raise ValueError(f"Invalid name {self.full_name}.")
 
     def saveData(self, validate_data: bool = False) -> int:
         # if validate_data:
@@ -61,11 +68,16 @@ class User:
         if validate_data:
             return User.DB.insert(self.__dict__)
 
-    '''def save(self):
-        return User.DB.insert(
-            {"first_name": self.first_name, "last_name": self.last_name, "phone_number": self.phone_number,
-             "address": self.address})'''
+    def save(self, validate_data=False):
+        if validate_data:
+            '''return User.DB.insert(
+                {"first_name": self.first_name, "last_name": self.last_name, "phone_number": self.phone_number,
+                 "address": self.address})'''
+            print("Validation....before insertion")
+        User.DB.insert(self.__dict__)
 
+def get_all_users():
+    print(User.DB.all())
 
 if __name__ == "__main__":
     print(string.punctuation)
@@ -76,8 +88,10 @@ if __name__ == "__main__":
     for _ in range(5):
         user = User(
             first_name=fake.first_name,
-            last_name=fake.last_name(),
+            last_name="",
             phone_number=fake.phone_number(),
             address=fake.address())
-        print(user.__str__())
+        # user._check_names()
+        user.save(validate_data=True)
+        #print(user.save(validate_data=True))
         print("-" * 5)
